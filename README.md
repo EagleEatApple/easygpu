@@ -1,5 +1,10 @@
 # EasyGPU
 
+[![PyPI version](https://img.shields.io/pypi/v/EasyGPU)](https://pypi.org/project/EasyGPU/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/EasyGPU)](https://pypi.org/project/EasyGPU/)
+[![CI](https://github.com/EagleEatApple/easygpu/actions/workflows/ci.yml/badge.svg)](https://github.com/EagleEatApple/easygpu/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 **Status: 0.0.0 preview — API design validation only.**
 
 EasyGPU is a Python wrapper for WebGPU with a built-in `FakeGPU` that
