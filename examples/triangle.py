@@ -1,4 +1,4 @@
-"""EasyGPU 0.0.0 triangle — command encoding verified headlessly.
+"""EasyGPU 0.1.0 triangle — command encoding verified headlessly.
 
 No GPU is needed: every call is recorded by :class:`FakeGPU`. Run with
 ``uv run pytest tests/test_triangle.py``.

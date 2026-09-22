@@ -1,4 +1,4 @@
-"""The 0.0.0 triangle example verified via FakeGPU."""
+"""The 0.1.0 triangle example verified via FakeGPU."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ expected_prefix = [
     "set_pipeline",
     "set_vertex_buffer",
     "draw",
-    "end",
+    "end_render_pass",
     "finish",
     "submit",
 ]
@@ -33,7 +33,7 @@ def test_triangle_encoding_sequence(fake_gpu: FakeGPU) -> None:
     set_pipeline = fake_gpu.calls_of("set_pipeline")
     draw = fake_gpu.calls_of("draw")
     assert set_pipeline
-    assert draw == [(set_pipeline[0][0], 3, 1)]
+    assert draw == [(set_pipeline[0][0], 3, 1, 0, 0)]
 
     submit = fake_gpu.calls_of("submit")
     assert submit and submit[0][1] == fake_gpu.command_buffers
@@ -49,7 +49,7 @@ def test_triangle_pass_sequence(fake_gpu: FakeGPU) -> None:
         "set_pipeline",
         "set_vertex_buffer",
         "draw",
-        "end",
+        "end_render_pass",
     ]
 
 

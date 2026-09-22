@@ -1,7 +1,7 @@
 [project]
 name = "EasyGPU"
-version = "0.0.0"
-description = "A Python WebGPU wrapper with a built-in FakeGPU for TDD without a GPU (preview)"
+version = "0.1.0"
+description = "A Python WebGPU wrapper with a built-in FakeGPU for TDD without a GPU (headless)"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
@@ -9,15 +9,18 @@ authors = [
     { name = "eagletang", email = "yiguo.tang@outlook.com" }
 ]
 requires-python = ">=3.11"
-keywords = ["webgpu", "wgpu", "graphics", "tdd", "testing", "fake"]
+keywords = ["webgpu", "wgpu", "graphics", "tdd", "testing", "mock", "headless"]
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Multimedia :: Graphics :: 3D Rendering",
+    "Topic :: Software Development :: Quality Assurance",
     "Topic :: Software Development :: Testing",
+    "Typing :: Typed",
 ]
 
 dependencies = []
@@ -26,12 +29,14 @@ dependencies = []
 Homepage = "https://github.com/EagleEatApple/easygpu"
 Repository = "https://github.com/EagleEatApple/easygpu"
 Issues = "https://github.com/EagleEatApple/easygpu/issues"
-
+Changelog = "https://github.com/EagleEatApple/easygpu/blob/main/CHANGELOG.md"
 
 [build-system]
 requires = ["uv_build>=0.12.15,<0.13.0"]
 build-backend = "uv_build"
 
+[tool.uv.build-backend]
+source-include = ["examples/**", "tests/**"]
 
 [dependency-groups]
 dev = [

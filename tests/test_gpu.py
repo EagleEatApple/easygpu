@@ -29,6 +29,12 @@ def test_configure_and_get_gpu_roundtrip() -> None:
         configure(previous)
 
 
+def test_default_implementation_satisfies_protocol_structurally() -> None:
+    from easygpu.gpu import _DefaultGPU
+
+    assert isinstance(_DefaultGPU(), GPU)
+
+
 def test_gpu_module_stays_a_protocol_leaf() -> None:
     """easygpu.gpu must not pull wrapper modules in at runtime."""
     code = (

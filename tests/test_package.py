@@ -44,8 +44,8 @@ def test_package_imports() -> None:
     assert easygpu.__version__ is not None
 
 
-def test_version_is_000() -> None:
-    assert easygpu.__version__ == "0.0.0"
+def test_version_is_010() -> None:
+    assert easygpu.__version__ == "0.1.0"
 
 
 def test_core_exports_present() -> None:
@@ -61,4 +61,4 @@ def test_import_warns_about_api_preview() -> None:
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
         importlib.reload(easygpu)
-    assert any("0.0.0" in str(item.message) for item in caught)
+    assert any("0.1.0" in str(item.message) for item in caught)

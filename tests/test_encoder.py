@@ -9,12 +9,37 @@ from easygpu.constants import BufferUsage, LoadOp, StoreOp
 from easygpu.encoder import (
     CommandBuffer,
     CommandEncoder,
+    ComputePassDescriptor,
+    RenderBundleDescriptor,
     RenderPassColorAttachment,
     RenderPassEncoder,
 )
 from easygpu.errors import GPUValidationError
 from easygpu.fake_gpu import FakeGPU
 from easygpu.pipeline import RenderPipeline
+
+
+def test_compute_pass_descriptor_defaults() -> None:
+    assert ComputePassDescriptor().label is None
+
+
+def test_compute_pass_descriptor_label_round_trips() -> None:
+    assert ComputePassDescriptor(label="x").label == "x"
+
+
+def test_render_bundle_descriptor_defaults() -> None:
+    assert RenderBundleDescriptor().label is None
+
+
+def test_render_bundle_descriptor_label_round_trips() -> None:
+    assert RenderBundleDescriptor(label="x").label == "x"
+
+
+def test_descriptor_exports() -> None:
+    from easygpu import ComputePassDescriptor, RenderBundleDescriptor
+
+    assert ComputePassDescriptor().label is None
+    assert RenderBundleDescriptor().label is None
 
 
 def test_color_attachment_defaults() -> None:
@@ -32,7 +57,9 @@ def test_begin_render_pass_returns_encoder(fake_gpu: FakeGPU) -> None:
     enc = CommandEncoder(id_=1)
     rp = enc.begin_render_pass([RenderPassColorAttachment(view=0)])
     assert isinstance(rp, RenderPassEncoder)
-    assert fake_gpu.calls_of("begin_render_pass") == [(1, [RenderPassColorAttachment(view=0)])]
+    assert fake_gpu.calls_of("begin_render_pass") == [
+        (1, [RenderPassColorAttachment(view=0)], None)
+    ]
 
 
 def test_finish_records_and_returns_command_buffer(fake_gpu: FakeGPU) -> None:
@@ -63,9 +90,9 @@ def test_render_pass_records_draw_sequence(fake_gpu: FakeGPU) -> None:
     rp.draw(3, 2)
     rp.end()
     assert fake_gpu.calls_of("set_pipeline") == [(1, 2)]
-    assert fake_gpu.calls_of("set_vertex_buffer") == [(1, 0, 3)]
-    assert fake_gpu.calls_of("draw") == [(1, 3, 1), (1, 3, 2)]
-    assert fake_gpu.calls_of("end") == [(1,)]
+    assert fake_gpu.calls_of("set_vertex_buffer") == [(1, 0, 3, 0)]
+    assert fake_gpu.calls_of("draw") == [(1, 3, 1, 0, 0), (1, 3, 2, 0, 0)]
+    assert fake_gpu.calls_of("end_render_pass") == [(1,)]
 
 
 def test_double_end_raises(fake_gpu: FakeGPU) -> None:
@@ -81,14 +108,14 @@ def test_render_pass_context_manager_auto_ends(fake_gpu: FakeGPU) -> None:
     with enc.begin_render_pass([RenderPassColorAttachment(view=0)]) as rp:
         assert isinstance(rp, RenderPassEncoder)
         rp.draw(3)
-    assert fake_gpu.calls_of("end") == [(1,)]
+    assert fake_gpu.calls_of("end_render_pass") == [(1,)]
 
 
 def test_render_pass_context_manager_no_second_end(fake_gpu: FakeGPU) -> None:
     enc = CommandEncoder(id_=1)
     with enc.begin_render_pass([RenderPassColorAttachment(view=0)]) as rp:
         rp.end()
-    assert fake_gpu.calls_of("end") == [(1,)]
+    assert fake_gpu.calls_of("end_render_pass") == [(1,)]
 
 
 def test_render_pass_context_manager_preserves_body_exception(fake_gpu: FakeGPU) -> None:
@@ -98,7 +125,7 @@ def test_render_pass_context_manager_preserves_body_exception(fake_gpu: FakeGPU)
         enc.begin_render_pass([RenderPassColorAttachment(view=0)]),
     ):
         raise ValueError("boom")
-    assert fake_gpu.calls_of("end") == [(1,)]
+    assert fake_gpu.calls_of("end_render_pass") == [(1,)]
 
 
 def test_command_encoder_delete_forwards_destroy(fake_gpu: FakeGPU) -> None:

@@ -7,9 +7,10 @@ import struct
 import pytest
 
 from easygpu.buffer import Buffer, BufferDescriptor
-from easygpu.constants import BufferUsage
+from easygpu.constants import BufferUsage, MapMode
 from easygpu.device import Device
 from easygpu.errors import GPUObjectDeletedError
+from easygpu.gpu import GPUValidationError
 
 
 def test_descriptor_holds_shape() -> None:
@@ -78,3 +79,36 @@ def test_buffer_from_data_rejects_non_numeric(fake_gpu) -> None:
         Buffer.from_data(device, 42)
     with pytest.raises(TypeError):
         Buffer.from_data(device, ["not", "numeric"])
+
+
+def test_buffer_map_and_get_mapped_range_defaults(fake_gpu) -> None:
+    device = Device(id_=1)
+    buf = Buffer(id_=2, size=11, usage=BufferUsage.MAP_READ)
+    device.queue.write_buffer(buf, 0, b"hello world")
+    buf.map_async(MapMode.READ)
+    assert fake_gpu.calls_of("map_async") == [(2, MapMode.READ, 0, 11)]
+    assert buf.get_mapped_range() == b"hello world"
+    assert fake_gpu.calls_of("get_mapped_range") == [(2, 0, 11)]
+    assert fake_gpu.mapped[buf.id] == (MapMode.READ, 0, 11)
+
+
+def test_buffer_map_async_offset_size_and_get_mapped_range_slice(fake_gpu) -> None:
+    device = Device(id_=1)
+    buf = Buffer(id_=2, size=11, usage=BufferUsage.MAP_READ)
+    device.queue.write_buffer(buf, 0, b"hello world")
+    buf.map_async(MapMode.READ, offset=2)
+    assert fake_gpu.calls_of("map_async") == [(2, MapMode.READ, 2, 9)]
+    assert buf.get_mapped_range(2, 4) == b"llo "
+    assert fake_gpu.calls_of("get_mapped_range") == [(2, 2, 4)]
+
+
+def test_buffer_unmap_records_and_clears_mapping(fake_gpu) -> None:
+    device = Device(id_=1)
+    buf = Buffer(id_=2, size=11, usage=BufferUsage.MAP_READ)
+    device.queue.write_buffer(buf, 0, b"hello world")
+    buf.map_async(MapMode.READ)
+    buf.unmap()
+    assert fake_gpu.calls_of("unmap") == [(2,)]
+    assert buf.id not in fake_gpu.mapped
+    with pytest.raises(GPUValidationError):
+        buf.get_mapped_range()

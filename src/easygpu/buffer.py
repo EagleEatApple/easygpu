@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from easygpu.base import GPUObject
-from easygpu.constants import BufferUsage
+from easygpu.constants import BufferUsage, MapMode
 
 if TYPE_CHECKING:
     from easygpu.device import Device
@@ -66,6 +66,16 @@ class Buffer(GPUObject):
     @property
     def usage(self) -> BufferUsage | int:
         return self._usage
+
+    def map_async(self, mode: MapMode, *, offset: int = 0, size: int | None = None) -> None:
+        _gpu().map_async(self.id, mode, offset, self.size - offset if size is None else size)
+
+    def get_mapped_range(self, offset: int = 0, size: int | None = None) -> bytes:
+        end = self.size if size is None else offset + size
+        return _gpu().get_mapped_range(self.id, offset, end - offset)
+
+    def unmap(self) -> None:
+        _gpu().unmap(self.id)
 
     def _delete_impl(self) -> None:
         _gpu().destroy_buffer(self._id)
