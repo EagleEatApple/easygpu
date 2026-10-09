@@ -10,8 +10,10 @@ from easygpu.bindgroup import BindGroup
 from easygpu.buffer import Buffer
 from easygpu.constants import IndexFormat, LoadOp, StoreOp
 from easygpu.errors import GPUValidationError
+from easygpu.offscreen import OffscreenTarget
 from easygpu.pipeline import ComputePipeline, RenderPipeline
 from easygpu.query import QuerySet
+from easygpu.surface import SurfaceTarget
 from easygpu.texture import TextureView
 
 if TYPE_CHECKING:
@@ -35,9 +37,15 @@ class ComputePassDescriptor:
 
 @dataclass(frozen=True)
 class RenderPassColorAttachment:
-    """WebGPU ``GPURenderPassColorAttachment``."""
+    """WebGPU ``GPURenderPassColorAttachment``.
 
-    view: int | TextureView
+    ``view`` also accepts an :class:`~easygpu.offscreen.OffscreenTarget` or a
+    :class:`~easygpu.surface.SurfaceTarget`: backends resolve it (``FakeGPU``
+    records the call untouched, ``WgpuPyGPU`` lazily creates the backing
+    offscreen texture or acquires the surface texture view).
+    """
+
+    view: int | TextureView | OffscreenTarget | SurfaceTarget
     clear_value: tuple[float, float, float, float] = (0.0, 0.0, 0.0, 1.0)
     load_op: LoadOp = LoadOp.CLEAR
     store_op: StoreOp = StoreOp.STORE
@@ -52,9 +60,11 @@ class RenderPassDepthStencilAttachment:
     depth_clear_value: float = 1.0
     depth_load_op: LoadOp = LoadOp.CLEAR
     depth_store_op: StoreOp = StoreOp.STORE
+    depth_read_only: bool = False
     stencil_clear_value: int = 0
     stencil_load_op: LoadOp = LoadOp.CLEAR
     stencil_store_op: StoreOp = StoreOp.STORE
+    stencil_read_only: bool = False
 
 
 @dataclass(frozen=True)

@@ -63,9 +63,10 @@ def test_buffer_usage_composes() -> None:
 
 
 def test_primitive_topology() -> None:
-    assert PrimitiveTopology.TRIANGLE_LIST == 4
     assert (PrimitiveTopology.POINT_LIST, PrimitiveTopology.LINE_LIST) == (0, 1)
     assert PrimitiveTopology.LINE_STRIP == 2
+    assert PrimitiveTopology.TRIANGLE_LIST == 3
+    assert PrimitiveTopology.TRIANGLE_STRIP == 4
 
 
 def test_vertex_format_values() -> None:

@@ -51,10 +51,14 @@ class PrimitiveTopology(IntEnum):
     POINT_LIST = 0
     LINE_LIST = 1
     LINE_STRIP = 2
-    TRIANGLE_LIST = 4
+    TRIANGLE_LIST = 3
+    TRIANGLE_STRIP = 4
 
 
 class VertexFormat(IntEnum):
+    # Values mirror wgpu-native's WGPUVertexFormat ABI (Float16x2=8, ...);
+    # this is the subset easygpu ports to the wgpu-py string enum ("float32x2")
+    # via the VertexFormat table in wgpu_translate.
     FLOAT16X2 = 8
     FLOAT16X4 = 9
     FLOAT32 = 19
@@ -66,6 +70,9 @@ class VertexFormat(IntEnum):
 
 
 class IndexFormat(IntEnum):
+    # Values mirror wgpu-native's WGPUIndexFormat ABI (Uint16=1, Uint32=2).
+    # wgpu-py spells them as the string enum "uint16"/"uint32"; easygpu's
+    # wgpu_translate table maps this int through to that string at the seam.
     UINT16 = 1
     UINT32 = 2
 

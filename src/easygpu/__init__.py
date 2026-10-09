@@ -5,9 +5,10 @@ implementation of the :class:`easygpu.gpu.GPU` protocol that lets you TDD
 your command-encoding logic without a GPU.
 """
 
+import importlib.util
 import warnings
 
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 
 from easygpu.bindgroup import (
     BindGroup,
@@ -74,6 +75,7 @@ from easygpu.matrix import (
     scale,
     translation,
 )
+from easygpu.offscreen import OffscreenTarget, offscreen_target, readback_rgba8
 from easygpu.pipeline import (
     BlendComponent,
     BlendState,
@@ -91,6 +93,7 @@ from easygpu.pipeline import (
 from easygpu.query import QuerySet, QuerySetDescriptor
 from easygpu.sampler import Sampler, SamplerDescriptor
 from easygpu.shader import ShaderModule, ShaderModuleDescriptor
+from easygpu.surface import SurfaceTarget
 from easygpu.texture import (
     Texture,
     TextureDescriptor,
@@ -98,12 +101,14 @@ from easygpu.texture import (
     TextureViewDescriptor,
 )
 
-warnings.warn(
-    "easygpu 0.1.1 is a command-encoding layer: the GPU Protocol and FakeGPU "
-    "are the deliverables, no real backend ships yet",
-    UserWarning,
-    stacklevel=2,
-)
+if importlib.util.find_spec("wgpu") is None:
+    warnings.warn(
+        "easygpu 0.2.0 ships a wgpu-py backend (install with "
+        "`uv sync --extra wgpu` or `pip install easygpu[wgpu]`); without the "
+        "extra, FakeGPU still records command encoding with no GPU",
+        UserWarning,
+        stacklevel=2,
+    )
 
 __all__ = [
     "AddressMode",
@@ -145,6 +150,7 @@ __all__ = [
     "MapMode",
     "MipmapFilterMode",
     "MultisampleState",
+    "OffscreenTarget",
     "PipelineLayout",
     "PipelineLayoutDescriptor",
     "PrimitiveTopology",
@@ -168,6 +174,7 @@ __all__ = [
     "ShaderStage",
     "ShaderStageEntry",
     "StoreOp",
+    "SurfaceTarget",
     "Texture",
     "TextureDescriptor",
     "TextureFormat",
@@ -184,8 +191,10 @@ __all__ = [
     "identity",
     "look_at",
     "multiply",
+    "offscreen_target",
     "ortho",
     "perspective",
+    "readback_rgba8",
     "request_adapter",
     "rotation",
     "rotation_x",

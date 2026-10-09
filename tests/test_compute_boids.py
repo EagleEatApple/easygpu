@@ -98,8 +98,14 @@ def test_compute_boids_deterministic_particle_seed(fake_gpu: FakeGPU) -> None:
     device = Device(id_=1)
     encode_compute_boids(device)
 
-    payloads = [args[3] for args in fake_gpu.calls_of("write_buffer")]
-    particle_payloads = [p for p in payloads if len(p) == NUM_PARTICLES * PARTICLE_STRIDE]
+    particle_handles = {
+        handle
+        for handle, descriptor in fake_gpu.buffer_descriptors.items()
+        if str(getattr(descriptor, "label", "")).startswith("particle-buffer-")
+    }
+    particle_payloads = [
+        args[3] for args in fake_gpu.calls_of("write_buffer") if args[1] in particle_handles
+    ]
     assert len(particle_payloads) == 2
     expected_particle_zero = struct.pack("<4f", -1.0, -0.5, 0.0, 0.0)
     for payload in particle_payloads:

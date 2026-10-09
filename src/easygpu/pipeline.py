@@ -76,6 +76,7 @@ class ColorTargetState:
 
     format: TextureFormat | int
     blend: BlendState | None = None
+    write_mask: int = 0xF
 
 
 @dataclass(frozen=True)

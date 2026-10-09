@@ -4,6 +4,62 @@ All notable changes to this project are documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-10-10
+
+Real backend release — **`WgpuPyGPU` behind the stable `GPU` Protocol, with
+offscreen render targets that render headlessly on lavapipe and WARP.**
+
+### Added
+
+- `WgpuPyGPU` (`easygpu.wgpu_backend`): delegates the existing `GPU` Protocol to
+  wgpu-py. Adapter/device/queue creation (`EASYGPU_SOFTWARE=1` forces a software
+  adapter), buffers with synchronous readback (`map_async`/`get_mapped_range`),
+  shader modules, render/compute pipelines with auto layouts, textures/views/
+  samplers, bind groups, full render-pass and compute-pass encoding, `submit`,
+  `write_buffer`/`write_texture` (256-byte-row safe), `copy_texture_to_buffer`.
+  `WgpuPyGPU.from_wgpu_device()` adopts an existing wgpu device;
+  `WgpuPyGPU.underlying_device` exposes it.
+- `easygpu.gpu.WGPU_BACKEND_UNSUPPORTED`: a `frozenset[str]` naming every
+  Protocol method `WgpuPyGPU` does not yet implement (14 in 0.2.0). The
+  backend raises `GPUValidationError("<name> not yet supported by WgpuPyGPU")`
+  for these; a parametrized capability test walks the set so the marker stays
+  in sync with the backend.
+- `easygpu.testing`: assertion helpers over `FakeGPU.calls` —
+  `assert_call_order`, `assert_no_call`, `diff_against`, `call_names`.
+  Kept separate from `fake_gpu.py` so the recording path stays import-free
+  of assertion concerns.
+- `easygpu.offscreen`: `OffscreenTarget`, `offscreen_target()`, and
+  `readback_rgba8()` (copy + map + 256-stride unpad → tight RGBA). FakeGPU
+  records the same encoding; only a real backend has pixels.
+- `easygpu.wgpu_translate`: pure descriptor/enum translation, tested without
+  a GPU (18 enum tables + descriptor translators).
+- Optional `wgpu` extra (`pip install easygpu[wgpu]`); plain `import easygpu`
+  stays zero-dependency.
+- Dual-engine offscreen suite in `tests/offscreen/` — every test runs once
+  against FakeGPU recording and once against live WgpuPyGPU pixels.
+- 3 offscreen examples: `triangle_offscreen`, `textured_cube_offscreen`,
+  `compute_boids_offscreen`.
+- CI renders offscreen on Linux (lavapipe) and Windows (WARP) with software
+  adapters, plus the zero-dependency core job.
+
+### Changed
+
+- `__version__` → `0.2.0`; import warning now nudges installing the `wgpu` extra.
+- `RenderPassColorAttachment.view` accepts int handles, `TextureView`, or an
+  `OffscreenTarget` (the recommended headless attachment).
+- Pipeline color targets must declare a format (as WebGPU requires) — offscreen
+  examples use `fragment_targets=[ColorTargetState(format=target.format)]`.
+- `tests/conftest.py` gains a `wgpu_gpu` fixture and an `EASYGPU_ENGINE=wgpu`
+  switch on the `fake_gpu` fixture for same-suite smoke runs.
+
+### Fixed
+
+- Basic vertex + textured fragment shaders (both `fn main`) now build as
+  separate modules to satisfy WGSL redefinition rules on the real backend.
+
+> **Note**: includes the 0.1.1 README fix — examples run as modules
+> (`python -m examples.xxx`).
+
 ## [0.1.1] - 2026-10-09
 
 ### Fixed
@@ -12,7 +68,6 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
   of `uv run python examples/xxx.py`, which failed with
   `ModuleNotFoundError: No module named 'examples'` because the script
   directory (not the repository root) goes on `sys.path`.
-
 
 ## [0.1.0] - 2026-09-22
 

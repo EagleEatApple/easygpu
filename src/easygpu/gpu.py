@@ -2,9 +2,16 @@
 
 Every wrapper talks to "the GPU" only through a :class:`GPU` implementation.
 This makes the library testable without a GPU: tests inject a recording
-:class:`~easygpu.fake_gpu.FakeGPU`, while future versions will ship a real
-wgpu-backed implementation. 0.1.0 ships no real backend — the Protocol IS
-the deliverable.
+:class:`~easygpu.fake_gpu.FakeGPU`, while the optional ``easygpu[wgpu]``
+extra ships :class:`~easygpu.wgpu_backend.WgpuPyGPU`, a real wgpu-py-backed
+implementation of this same protocol.
+
+Protocol conformance is **not** uniform across the shipped backends:
+:class:`~easygpu.fake_gpu.FakeGPU` implements the full protocol, while
+``WgpuPyGPU`` raises ``GPUValidationError`` for the methods in
+:data:`WGPU_BACKEND_UNSUPPORTED` (they are not implemented yet). That
+frozenset is the single source of truth for the capability gap — check it
+when a method behaves differently than you expect.
 
 The protocol speaks in named int handle aliases (``BufferHandle`` etc.) so
 readers can tell which object each id refers to. Resource wrappers in
@@ -57,6 +64,34 @@ ComputePassHandle = int
 RenderBundleEncoderHandle = int
 RenderBundleHandle = int
 CommandBufferHandle = int
+
+#: Protocol methods :class:`easygpu.wgpu_backend.WgpuPyGPU` does NOT implement
+#: in 0.2.0. Calling any of them raises
+#: ``GPUValidationError("<name> not yet supported by WgpuPyGPU")``; every one
+#: is still implemented by :class:`~easygpu.fake_gpu.FakeGPU`, so the protocol
+#: as a whole stays satisfied (runtime ``isinstance`` checks pass).
+#:
+#: The backend validates against this set (``WgpuPyGPU._unsupported`` refuses
+#: to raise for a name that is not listed here), and the capability test
+#: parametrizes over it, so adding a backend method means adding it here too.
+WGPU_BACKEND_UNSUPPORTED: frozenset[str] = frozenset(
+    {
+        "generate_mipmap",
+        "create_query_set",
+        "execute_render_bundles",
+        "write_timestamp",
+        "create_render_bundle_encoder",
+        "write_compute_timestamp",
+        "bundle_set_pipeline",
+        "bundle_set_bind_group",
+        "bundle_set_vertex_buffer",
+        "bundle_set_index_buffer",
+        "bundle_draw",
+        "bundle_draw_indexed",
+        "bundle_finish",
+        "resolve_query_set",
+    }
+)
 
 
 @runtime_checkable

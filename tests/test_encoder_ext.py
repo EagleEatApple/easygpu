@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import struct
+
 import pytest
 
 from easygpu.bindgroup import BindGroup
@@ -215,6 +217,45 @@ def test_copies_and_query_resolve(fake_gpu: FakeGPU) -> None:
     assert fake_gpu.calls_of("copy_texture_to_texture") == [(1, src.id, dst.id, (4, 4, 1))]
     assert fake_gpu.calls_of("copy_texture_to_buffer") == [(1, src.id, 3, (4, 4, 1))]
     assert fake_gpu.calls_of("resolve_query_set") == [(1, 9, 0, 2, 5, 0)]
+
+
+def test_copy_texture_to_buffer_via_view_reads_texture_content(fake_gpu: FakeGPU) -> None:
+    device = Device(id_=2)
+    texture = device.create_texture(
+        TextureDescriptor(size=(2, 2, 1), format=TextureFormat.RGBA8_UNORM, usage=18)
+    )
+    view = texture.create_view()
+    payload = bytes(range(16))
+    device.queue.write_texture(texture, payload, width=2, height=2)
+    buf = Buffer(id_=3, size=16, usage=BufferUsage.COPY_DST)
+    enc = CommandEncoder(id_=1)
+    enc.copy_texture_to_buffer(view, buf, size=(2, 2, 1))
+    assert bytes(fake_gpu.buffers[buf.id][:16]) == payload
+
+
+def test_copy_texture_to_texture_via_views_copies_content(fake_gpu: FakeGPU) -> None:
+    device = Device(id_=2)
+    src = device.create_texture(
+        TextureDescriptor(size=(2, 2, 1), format=TextureFormat.RGBA8_UNORM, usage=18)
+    )
+    dst = device.create_texture(
+        TextureDescriptor(size=(2, 2, 1), format=TextureFormat.RGBA8_UNORM, usage=18)
+    )
+    payload = bytes(range(16))
+    device.queue.write_texture(src, payload, width=2, height=2)
+    enc = CommandEncoder(id_=1)
+    enc.copy_texture_to_texture(src.create_view(), dst.create_view(), size=(2, 2, 1))
+    assert bytes(fake_gpu.textures[dst.id].data[:16]) == payload
+
+
+def test_query_resolve_writes_at_byte_offset(fake_gpu: FakeGPU) -> None:
+    enc = CommandEncoder(id_=1)
+    fake_gpu.query_results[9] = [10, 20, 30, 40]
+    dest = Buffer(id_=5, size=32, usage=BufferUsage.QUERY_RESOLVE)
+    enc.resolve_query_set(QuerySet(id_=9), 1, 2, dest, 8)
+    stored = bytes(fake_gpu.buffers[5])
+    assert stored[8:16] == struct.pack("<2I", 20, 30)
+    assert stored[:8] == b"\x00" * 8
 
 
 def test_render_pass_buffer_setters_wire_order(fake_gpu: FakeGPU) -> None:

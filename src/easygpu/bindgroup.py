@@ -44,6 +44,7 @@ class BindGroupLayoutEntry:
     buffer: BufferBindingType | None = None
     sampler: bool | SamplerBindingType | None = None
     texture: TextureSampleType | None = None
+    view_dimension: str = "2d"
 
 
 @dataclass(frozen=True)

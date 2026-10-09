@@ -570,8 +570,10 @@ class FakeGPU:
         size: tuple[int, int, int],
     ) -> None:
         self.calls.append(("copy_texture_to_texture", (encoder, src, dst, size)))
-        src_state = self.textures.setdefault(src, TextureState(0, 0, 1, 0, 0, 1, 1))
-        dst_state = self.textures.setdefault(dst, TextureState(0, 0, 1, 0, 0, 1, 1))
+        src_texture = self.texture_views.get(src, src)
+        dst_texture = self.texture_views.get(dst, dst)
+        src_state = self.textures.setdefault(src_texture, TextureState(0, 0, 1, 0, 0, 1, 1))
+        dst_state = self.textures.setdefault(dst_texture, TextureState(0, 0, 1, 0, 0, 1, 1))
         nbytes = size[0] * size[1] * size[2] * 4
         if len(dst_state.data) < nbytes:
             dst_state.data.extend(b"\x00" * (nbytes - len(dst_state.data)))
@@ -586,7 +588,8 @@ class FakeGPU:
         size: tuple[int, int, int],
     ) -> None:
         self.calls.append(("copy_texture_to_buffer", (encoder, src, dst, size)))
-        src_state = self.textures.setdefault(src, TextureState(0, 0, 1, 0, 0, 1, 1))
+        src_texture = self.texture_views.get(src, src)
+        src_state = self.textures.setdefault(src_texture, TextureState(0, 0, 1, 0, 0, 1, 1))
         nbytes = size[0] * size[1] * 4
         store = self.buffers.setdefault(dst, bytearray())
         if len(store) < nbytes:
@@ -613,7 +616,7 @@ class FakeGPU:
             int(v).to_bytes(4, "little") for v in results[first_query : first_query + query_count]
         )
         store = self.buffers.setdefault(destination, bytearray())
-        start = destination_offset * 4
+        start = destination_offset
         need = start + len(data)
         if need > len(store):
             store.extend(b"\x00" * (need - len(store)))
