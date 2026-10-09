@@ -2,12 +2,19 @@
 
 from __future__ import annotations
 
+import warnings
 from collections.abc import Iterator
 
 import pytest
 
 from easygpu import gpu as gpu_module
 from easygpu.fake_gpu import FakeGPU
+
+warnings.filterwarnings(
+    "ignore",
+    message="easygpu .* is a command-encoding layer",
+    category=UserWarning,
+)
 
 
 @pytest.fixture

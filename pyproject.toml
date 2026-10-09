@@ -1,6 +1,6 @@
 [project]
 name = "EasyGPU"
-version = "0.1.0"
+version = "0.1.1"
 description = "A Python WebGPU wrapper with a built-in FakeGPU for TDD without a GPU (headless)"
 readme = "README.md"
 license = "MIT"

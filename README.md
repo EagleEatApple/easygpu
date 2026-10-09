@@ -5,12 +5,12 @@
 [![CI](https://github.com/EagleEatApple/easygpu/actions/workflows/ci.yml/badge.svg)](https://github.com/EagleEatApple/easygpu/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Status: 0.1.0 — command encoding + FakeGPU complete; real backend on the roadmap.**
+**Status: 0.1.1 — command encoding + FakeGPU complete; real backend on the roadmap.**
 
 EasyGPU is a Python wrapper for WebGPU with a built-in `FakeGPU` that
 lets you TDD your command-encoding logic without a GPU.
 
-## What works in 0.1.0
+## What works in 0.1.1
 
 - ✅ **`GPU` Protocol** (73 methods) + `configure`/`get_gpu`
 - ✅ **`FakeGPU`** — records and asserts command encoding without a GPU,
@@ -32,7 +32,7 @@ lets you TDD your command-encoding logic without a GPU.
   `easygpu.matrix`
 - ✅ **13 examples** — 11 `webgpu-samples` ports + 2 self-authored (triangle, alpha_to_coverage)
 
-## What does NOT work in 0.1.0
+## What does NOT work in 0.1.1
 
 - ❌ No real GPU backend — the `GPU` Protocol is the deliverable; the wrappers
   raise `GPUValidationError` unless you `configure()` a fake or real backend
@@ -46,8 +46,10 @@ lets you TDD your command-encoding logic without a GPU.
 ## Examples
 
 All examples live in the [`examples/`](https://github.com/EagleEatApple/easygpu/tree/main/examples)
-directory of the repository. They are not shipped in the wheel — run them
-from a clone or from the source distribution.
+directory of the repository and are not shipped in the wheel — run them from
+a clone or from the source distribution. They run from the repository root;
+use Python's `-m` form (e.g. `uv run python -m examples.triangle`) so the
+shared helper modules under `examples/` resolve.
 
 Ports of [`webgpu-samples`](https://github.com/webgpu/webgpu-samples), each
 encoding one frame against `FakeGPU` and verified by a pytest. 11
@@ -74,7 +76,7 @@ WGSL and data are inlined/adapted (no browser, no image assets).
 Run one directly, e.g.:
 
 ```bash
-uv run python examples/textured_cube.py
+uv run python -m examples.textured_cube
 uv run pytest tests/test_textured_cube.py -v
 ```
 
@@ -85,7 +87,7 @@ uv run pytest tests/test_textured_cube.py -v
 ```bash
 uv sync
 uv run pytest                # headless, no GPU needed
-uv run python examples/triangle.py
+uv run python -m examples.triangle
 ```
 
 ### From PyPI (users)
@@ -96,11 +98,13 @@ python -c "from easygpu.fake_gpu import FakeGPU; print(FakeGPU())"
 ```
 
 > **Note**: importing `easygpu` emits a `UserWarning` explaining that
-> 0.1.0 ships no real backend. It will go away once one lands.
+> 0.1.1 ships no real backend. It will go away once one lands.
 
 ## Roadmap
 
-- **0.1.0** (current): command encoding + `FakeGPU`, 13 examples, zero runtime deps
+- **0.1.0**: command encoding + `FakeGPU`, 13 examples, zero runtime deps
+- **0.1.1** (current): README fix — examples run as modules (`python -m
+  examples.xxx`)
 - 0.2.0: real backend behind the `GPU` Protocol (wgpu-py), keeping the Protocol stable
 - 0.3.0: swapchain + windowed output
 - 0.4.0: dynamic-offset bind groups, GPU timing readback
@@ -109,9 +113,12 @@ python -c "from easygpu.fake_gpu import FakeGPU; print(FakeGPU())"
 ## Project layout
 
 - `src/easygpu/` — library (Protocol seam + wrapper objects + `fake_gpu.py`)
-- `examples/` — runnable examples (11 `webgpu-samples` ports + 2 self-authored)
+- `examples/` — 13 runnable examples (11 `webgpu-samples` ports + 2
+  self-authored), plus shared helper modules (`shaders.py`,
+  `shadow_shaders.py`, `boids_shaders.py`, `cube_mesh.py`, `textures.py`)
+  that the examples import
 - `tests/` — pytest suite for the library and every example (headless)
 
 > The layout above describes the **source repository**. The published wheel
 > contains only `src/easygpu/` — `examples/` and `tests/` live in the
-> repository and in the source distribution (`easygpu-0.1.0.tar.gz`).
+> repository and in the source distribution (`easygpu-0.1.1.tar.gz`).

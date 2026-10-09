@@ -4,6 +4,16 @@ All notable changes to this project are documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-10-09
+
+### Fixed
+
+- README: run examples as modules (`uv run python -m examples.xxx`) instead
+  of `uv run python examples/xxx.py`, which failed with
+  `ModuleNotFoundError: No module named 'examples'` because the script
+  directory (not the repository root) goes on `sys.path`.
+
+
 ## [0.1.0] - 2026-09-22
 
 First functional release — **command encoding + `FakeGPU` complete;

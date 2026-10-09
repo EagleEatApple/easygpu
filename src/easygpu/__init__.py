@@ -7,7 +7,7 @@ your command-encoding logic without a GPU.
 
 import warnings
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 from easygpu.bindgroup import (
     BindGroup,
@@ -99,8 +99,8 @@ from easygpu.texture import (
 )
 
 warnings.warn(
-    "easygpu 0.1.0 is a command-encoding layer: the GPU Protocol and FakeGPU "
-"are the deliverables, no real backend ships yet",
+    "easygpu 0.1.1 is a command-encoding layer: the GPU Protocol and FakeGPU "
+    "are the deliverables, no real backend ships yet",
     UserWarning,
     stacklevel=2,
 )
